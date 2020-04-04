@@ -44,7 +44,7 @@ add_subdirectory(lib)
 # Set compile flags.
 target_compile_options(${PROJECT_NAME} PRIVATE
     # Clang
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Weverything>
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Weverything -Wno-c++98-compat -Wno-documentation -Wno-documentation-unknown-command>
     # GCC
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -fdiagnostics-color=always>
     # Visual Studio
