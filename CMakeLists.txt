@@ -44,7 +44,7 @@ add_subdirectory(lib)
 # Set compile flags.
 target_compile_options(${PROJECT_NAME} PRIVATE
     # Clang
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Weverything>
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Weverything -Wno-c++98-compat>
     # GCC
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -fdiagnostics-color=always>
     # Visual Studio
@@ -54,7 +54,11 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 # Find dependencies.
 find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 
+# Symlink resources to the binary location.
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets)
 
 # Include and link against dependencies.
-# target_include_directories(${PROJECT_NAME} PUBLICcd ${SDL2_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL SDL2main SDL2 SDL2-static)
+# target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU SDL2main SDL2 SDL2-static)
