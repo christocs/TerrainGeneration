@@ -1,9 +1,35 @@
-[submodule "lib/glad"]
-	path = lib/glad
-	url = https://github.com/Dav1dde/glad
+[submodule "lib/entt"]
+	path = lib/entt
+	url = https://github.com/skypjack/entt
+	branch = master
+[submodule "lib/assimp"]
+	path = lib/assimp
+	url = https://github.com/assimp/assimp
+	branch = master
+[submodule "lib/reactphysics3d"]
+	path = lib/reactphysics3d
+	url = https://github.com/DanielChappuis/reactphysics3d
+	branch = master
+[submodule "lib/cpplocate"]
+	path = lib/cpplocate
+	url = https://github.com/cginternals/cpplocate
+	branch = master
+[submodule "lib/lua-bridge"]
+	path = lib/lua-bridge
+	url = https://github.com/vinniefalco/LuaBridge
+	branch = master
+[submodule "lib/lua/lua"]
+	path = lib/lua/lua
+	url = https://github.com/lua/lua
+[submodule "lib/stb/stb"]
+	path = lib/stb/stb
+	url = https://github.com/nothings/stb
+[submodule "lib/imgui/imgui"]
+	path = lib/imgui/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "cmake/cmake-git-version-tracking"]
+	path = cmake/cmake-git-version-tracking
+	url = https://github.com/andrew-hardin/cmake-git-version-tracking
 [submodule "lib/glm"]
 	path = lib/glm
 	url = https://github.com/g-truc/glm
-[submodule "lib/glfw"]
-	path = lib/glfw
-	url = https://github.com/glfw/glfw

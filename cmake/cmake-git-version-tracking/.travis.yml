@@ -1,0 +1,10 @@
+language: cpp
+dist: xenial
+compiler:
+- gcc
+os:
+- linux
+script:
+- ./tests/run_all.sh
+
+
