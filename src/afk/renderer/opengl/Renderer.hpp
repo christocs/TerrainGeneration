@@ -84,6 +84,7 @@ namespace Afk {
 
       // Resource management
       auto get_model(const std::filesystem::path &file_path) -> const ModelHandle &;
+      auto get_terrain(const std::filesystem::path &file_path) -> const ModelHandle &;
       auto get_texture(const std::filesystem::path &file_path) -> const TextureHandle &;
       auto get_shader(const std::filesystem::path &file_path) -> const ShaderHandle &;
       auto get_shader_program(const std::filesystem::path &file_path)

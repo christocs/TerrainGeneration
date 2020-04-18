@@ -99,7 +99,8 @@ Engine::Engine() {
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
+  const auto &basketball  = this->renderer.get_model("res/model/basketball/basketball.fbx");
+  const auto &terrain  = this->renderer.get_terrain("hello_terrain");
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen();
@@ -113,8 +114,11 @@ auto Engine::render() -> void {
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
-  transform.translation = vec3{0.0f, -1.0f, 0.0f};
-  this->renderer.draw_model(model, shader, transform);
+  transform.scale = glm::vec3{5.0f, 5.0f, 5.0f};
+  this->renderer.draw_model(basketball, shader, transform);
+
+  this->renderer.draw_model(terrain, shader, Transform{});
+
   this->ui.draw();
   this->renderer.swap_buffers();
 }

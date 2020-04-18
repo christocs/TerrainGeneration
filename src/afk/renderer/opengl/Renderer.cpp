@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <stdlib.h>
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -146,7 +147,92 @@ auto Renderer::get_model(const path &file_path) -> const ModelHandle & {
   const auto is_loaded = this->models.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->models[file_path] = this->load_model(Model{file_path});
+    const auto m = Model{file_path};
+    this->models[file_path] = this->load_model(m);
+  }
+
+  return this->models.at(file_path);
+}
+
+auto Renderer::get_terrain(const path &file_path) -> const ModelHandle & {
+  const auto is_loaded = this->models.count(file_path) == 1;
+
+  if (!is_loaded) {
+    auto terrain_model = Model{};
+
+    const unsigned width = 16;
+    const unsigned height = 16;
+
+    std::vector<glm::vec2> texCoords;
+    texCoords.resize(3);
+    texCoords[0] = glm::vec2{0.0f, 0.0f};
+    texCoords[1] = glm::vec2{1.0f, 0.0f};
+    texCoords[2] = glm::vec2{0.5f, 1.0f};
+
+    terrain_model.meshes.resize(1);
+
+    // define vertices for plane
+    const auto no_vertices = static_cast<size_t>(width * height);
+    terrain_model.meshes[0].vertices.resize(no_vertices);
+
+    size_t vertex_index = 0;
+    
+    unsigned texCoordsIndex = 0;
+
+    for (unsigned x = 0; x < width; x++) {
+      for (unsigned z = 0; z < height; z++) {
+        terrain_model.meshes[0].vertices[vertex_index].position =
+          glm::vec3{static_cast<float>(x), static_cast<float>((rand() % 20)*0.2f), static_cast<float>(z)};
+//std::cout << "count: " << texCoordsIndex << std::endl;
+        terrain_model.meshes[0].vertices[vertex_index].uvs = texCoords[texCoordsIndex++];
+
+        if (texCoordsIndex > 2) {
+          texCoordsIndex = 0;
+        }
+
+        vertex_index++;
+
+        // terrain_model.meshes[0].vertices[vertex_index++].position =
+        //   glm::vec3{static_cast<float>(x), 0.0f, static_cast<float>(z)};
+      }
+    }
+
+    // link vertices together
+    // traverse each "square" in the grid
+    size_t index_index = 0;
+    terrain_model.meshes[0].indices.resize((width -1) * (height - 1) * 6);
+    
+    for (unsigned x = 0; x < (width - 1); x++) {
+      for (unsigned z = 0; z < (height - 1); z++) {
+        // converting x and y posiiton to vertex index
+        // vertex index = (z * width) + x
+        auto base_index = static_cast<Mesh::Index>(x * height + z);
+
+        terrain_model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index);
+        terrain_model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index + height);
+        terrain_model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index + height + 1);
+
+        terrain_model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index);
+        terrain_model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index + 1);
+        terrain_model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index + height + 1);
+      }
+    }
+
+    // set texture
+    // const auto abs_path = Afk::get_absolute_path(file_path);
+    // auto importer       = Assimp::Importer{};
+
+    // const auto *scene = importer.ReadFile(abs_path.string(), 0);
+    // auto assimp_path = aiString{};
+    //const auto a = ASSIMP_API;
+    //aiMaterial::GetTexture(Texture::Type::Diffuse, 0, &assimp_path);
+    // const auto file_path = get_texture_path(path{string{assimp_path.C_Str()}});
+
+    // terrain_model.meshes[0].textures.resize(0);
+    // terrain_model.meshes[0].textures[0].type = Afk::Texture::Type::Diffuse;
+    // terrain_model.meshes[0].textures[0].file_path = "res/model/basketball/textures/Basketball.png";
+
+    this->models[file_path] = this->load_model(terrain_model);
   }
 
   return this->models.at(file_path);
@@ -189,7 +275,8 @@ auto Renderer::set_texture_unit(size_t unit) const -> void {
 
 auto Renderer::bind_texture(const TextureHandle &texture) const -> void {
   afk_assert_debug(texture.id > 0, "Invalid texture unit");
-  glBindTexture(GL_TEXTURE_2D, texture.id);
+  // glBindTexture(GL_TEXTURE_2D, texture.id);
+  glBindTexture(GL_TEXTURE_2D, 1);
 }
 
 auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
