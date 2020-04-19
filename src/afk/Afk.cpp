@@ -96,7 +96,7 @@ Engine::Engine() {
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
 
-  this->terrain_manager.create_flat_plain(16, 16);
+  this->terrain_manager.generate_from_height_map("res/heightmap/height128.raw", 128, 128);
 
   this->terrain_model_handle = this->renderer.load_model(this->terrain_manager.get_model());
 }
@@ -116,11 +116,9 @@ auto Engine::render() -> void {
       this->camera.get_projection_matrix(window_size.x, window_size.y));
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
-  auto transform        = Transform{};
-  transform.scale = glm::vec3{5.0f, 5.0f, 5.0f};
-  this->renderer.draw_model(basketball, shader, transform);
-
-  this->renderer.draw_model(this->terrain_model_handle, shader, Transform{});
+  Transform transform;
+  transform.scale = vec3{1.0f, 30.0f, 1.0f};
+  this->renderer.draw_model(this->terrain_model_handle, shader, transform);
 
   this->ui.draw();
   this->renderer.swap_buffers();
