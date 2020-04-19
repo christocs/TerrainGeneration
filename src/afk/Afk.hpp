@@ -6,6 +6,7 @@
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 #include "afk/ui/Ui.hpp"
+#include "afk/component/TerrainManager.hpp"
 
 namespace Afk {
   class Engine {
@@ -41,5 +42,9 @@ namespace Afk {
     bool is_running   = true;
     int frame_count   = {};
     float last_update = {};
+
+    Afk::TerrainManager terrain_manager;
+
+    Afk::ModelHandle terrain_model_handle;
   };
 }

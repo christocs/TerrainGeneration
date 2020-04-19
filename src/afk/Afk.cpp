@@ -95,12 +95,15 @@ Engine::Engine() {
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
+
+  this->terrain_manager.create_flat_plain(16, 16);
+
+  this->terrain_model_handle = this->renderer.load_model(this->terrain_manager.get_model());
 }
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
   const auto &basketball  = this->renderer.get_model("res/model/basketball/basketball.fbx");
-  const auto &terrain  = this->renderer.get_terrain("hello_terrain");
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen();
@@ -117,7 +120,7 @@ auto Engine::render() -> void {
   transform.scale = glm::vec3{5.0f, 5.0f, 5.0f};
   this->renderer.draw_model(basketball, shader, transform);
 
-  this->renderer.draw_model(terrain, shader, Transform{});
+  this->renderer.draw_model(this->terrain_model_handle, shader, Transform{});
 
   this->ui.draw();
   this->renderer.swap_buffers();

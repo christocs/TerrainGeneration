@@ -12,7 +12,10 @@
 namespace Afk {
   namespace OpenGl {
     class Renderer;
+    struct ModelHandle;
   }
 
   using Renderer = OpenGl::Renderer;
+
+  using ModelHandle = OpenGl::ModelHandle;
 }
