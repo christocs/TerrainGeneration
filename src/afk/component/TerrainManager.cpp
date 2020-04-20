@@ -23,16 +23,22 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
     size_t vertex_index = 0;
     
     unsigned texCoordsIndex = 0;
+    bool ascending = true;
 
     for (unsigned x = 0; x < width; x++) {
       for (unsigned z = 0; z < height; z++) {
-        // this->mesh.vertices[vertex_index].position =
-        //   glm::vec3{static_cast<float>(x), static_cast<float>((rand() % 20)*0.2f), static_cast<float>(z)};
-        this->model.meshes[0].vertices[vertex_index].uvs = texCoords[texCoordsIndex++];
-        //this->model.meshes[0].vertices[vertex_index].uvs = texCoords[rand() % 3];
+        this->model.meshes[0].vertices[vertex_index].uvs = texCoords[texCoordsIndex];
 
-        if (texCoordsIndex > 2) {
-          texCoordsIndex = 0;
+        if (ascending) {
+            texCoordsIndex++;
+            if (texCoordsIndex == (texCoords.size() - 1)) {
+                ascending = !ascending;
+            }
+        } else {
+            texCoordsIndex--;
+            if (texCoordsIndex == 0) {
+                ascending = !ascending;
+            }
         }
 
         this->model.meshes[0].vertices[vertex_index].position =
@@ -66,20 +72,6 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
 
     this->normalise_xz_plane();
 
-    // set texture
-    // const auto abs_path = Afk::get_absolute_path(file_path);
-    // auto importer       = Assimp::Importer{};
-
-    // const auto *scene = importer.ReadFile(abs_path.string(), 0);
-    // auto assimp_path = aiString{};
-    //const auto a = ASSIMP_API;
-    //aiMaterial::GetTexture(Texture::Type::Diffuse, 0, &assimp_path);
-    // const auto file_path = get_texture_path(path{string{assimp_path.C_Str()}});
-
-    // terrain_model.meshes[0].textures.resize(0);
-    // terrain_model.meshes[0].textures[0].type = Afk::Texture::Type::Diffuse;
-    // terrain_model.meshes[0].textures[0].file_path = "res/model/basketball/textures/Basketball.png";
-
 }
 
 auto Afk::TerrainManager::get_model() -> Afk::Model {
@@ -110,7 +102,11 @@ auto Afk::TerrainManager::generate_from_height_map(std::filesystem::path path, u
     auto vertexIndex = std::size_t{0};
     while (file.read(buffer, width)) {
         for (unsigned i = 0; i < width; i++) {
-            this->model.meshes[0].vertices[vertexIndex++].position.y = static_cast<float>(buffer[i]);
+            auto value = static_cast<float>(buffer[i]);
+            if (value < 0) {
+                value = -value;
+            }
+            this->model.meshes[0].vertices[vertexIndex++].position.y = value;
         }
     }
 
@@ -123,8 +119,9 @@ auto Afk::TerrainManager::generate_from_height_map(std::filesystem::path path, u
 
 auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned height) -> void {
     this->generate_flat(width, height);
-    for (int i = 0; i < 800; i++) {
-        this->iterate_fractal(width, height, 2.0f);
+    const auto noIterations = width * height;
+    for (int i = 0; i < noIterations; i++) {
+        this->iterate_fractal(width, height, rand() % 100);
     }
     this->normalise_height();
 }
