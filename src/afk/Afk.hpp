@@ -43,8 +43,10 @@ namespace Afk {
     int frame_count   = {};
     float last_update = {};
 
-    Afk::TerrainManager terrain_manager;
+    Afk::TerrainManager fractal_terrain_manager;
+    Afk::ModelHandle fractal_terrain_model_handle;
 
-    Afk::ModelHandle terrain_model_handle;
+    Afk::TerrainManager heightmap_terrain_manager;
+    Afk::ModelHandle heightmap_terrain_model_handle;
   };
 }
