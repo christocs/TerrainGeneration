@@ -136,11 +136,12 @@ auto Afk::TerrainManager::iterate_fractal(unsigned width, unsigned height, float
 
     for (unsigned z = 0; z < height; z++) {
         for (unsigned x = 0; x < width; x++) {
-            auto pointSide = (point2.x - point1.x) * (z - point1.y) - (point2.y - point1.y) * (x - point1.x);
+            auto pointSide = (x - point1.x) * (point2.y - point1.y) - (z - point1.y) * (point2.x - point1.x);
+
             auto i = static_cast<size_t>(z * width + x);
             if (pointSide > 0) {
                 this->model.meshes[0].vertices[i].position.y += static_cast<float>(displacement);
-            } else if (pointSide < 0) {
+            } else {
                 this->model.meshes[0].vertices[i].position.y -= static_cast<float>(displacement);
             }
         }
