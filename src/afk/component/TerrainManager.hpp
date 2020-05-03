@@ -18,7 +18,7 @@ namespace Afk {
 
     auto generate_fractal(unsigned width, unsigned height) -> void;
 
-    auto get_model() -> Afk::Model;
+    auto get_model(const std::filesystem::path &virtual_file_path) -> Afk::Model;
 
   private:
     Afk::Model model;

@@ -73,13 +73,11 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
     }
   }
 
-  // file path is used as an identifier, so requires a unique identifier
-  model.file_path = std::to_string(clock());
-
   this->normalise_xz_plane();
 }
 
-auto Afk::TerrainManager::get_model() -> Afk::Model {
+auto Afk::TerrainManager::get_model(const std::filesystem::path &virtual_file_path) -> Afk::Model {
+  this->model.file_path = virtual_file_path;
   this->assign_textures("res/texture/grass.png");
   return this->model;
 }

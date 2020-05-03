@@ -99,11 +99,11 @@ Engine::Engine() {
   this->heightmap_terrain_manager.generate_from_height_map(
       "res/heightmap/height128.raw", 128, 128);
   this->heightmap_terrain_model_handle =
-      this->renderer.load_model(this->heightmap_terrain_manager.get_model());
+      this->renderer.load_model(this->heightmap_terrain_manager.get_model("res/model/terrain/heightmap"));
 
   this->fractal_terrain_manager.generate_fractal(32, 32);
   this->fractal_terrain_model_handle =
-      this->renderer.load_model(this->fractal_terrain_manager.get_model());
+      this->renderer.load_model(this->fractal_terrain_manager.get_model("res/model/terrain/fractal"));
 }
 
 auto Engine::render() -> void {
