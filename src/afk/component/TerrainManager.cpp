@@ -21,7 +21,7 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
     this->model.meshes[0].vertices.resize(no_vertices);
 
     size_t vertex_index = 0;
-    
+
     unsigned texCoordsIndex = 0;
     bool ascending = true;
 
@@ -51,7 +51,7 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
     // link vertices together
     size_t index_index = 0;
     this->model.meshes[0].indices.resize((width -1) * (height - 1) * 6);
-    
+
     for (unsigned x = 0; x < (width - 1); x++) {
       for (unsigned z = 0; z < (height - 1); z++) {
         // vertex index = (z * width) + x
@@ -75,6 +75,7 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
 }
 
 auto Afk::TerrainManager::get_model() -> Afk::Model {
+    this->assign_textures();
     return this->model;
 }
 
@@ -119,9 +120,10 @@ auto Afk::TerrainManager::generate_from_height_map(std::filesystem::path path, u
 
 auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned height) -> void {
     this->generate_flat(width, height);
-    const auto noIterations = width * height;
+    // const auto noIterations = width * height;
+    const auto noIterations = 1;
     for (int i = 0; i < noIterations; i++) {
-        this->iterate_fractal(width, height, rand() % 100);
+        this->iterate_fractal(width, height, noIterations - (static_cast<float>(i) / noIterations));
     }
     this->normalise_height();
 }
@@ -134,14 +136,14 @@ auto Afk::TerrainManager::iterate_fractal(unsigned width, unsigned height, float
         point2 = this->get_random_coord(width, height);
     }
 
-    for (unsigned z = 0; z < height; z++) {
-        for (unsigned x = 0; x < width; x++) {
-            auto pointSide = (x - point1.x) * (point2.y - point1.y) - (z - point1.y) * (point2.x - point1.x);
-
-            auto i = static_cast<size_t>(z * width + x);
+    for (unsigned x = 0; x < width; x++) {
+        const auto stride = x * height;
+        for (unsigned z = 0; z < height; z++) {
+            auto pointSide = ((x - point1.x) * (point2.y - point1.y)) - ((z - point1.y) * (point2.x - point1.x));
+            const auto i = stride + z;
             if (pointSide > 0) {
                 this->model.meshes[0].vertices[i].position.y += static_cast<float>(displacement);
-            } else {
+            } else if (pointSide < 0) {
                 this->model.meshes[0].vertices[i].position.y -= static_cast<float>(displacement);
             }
         }
@@ -150,8 +152,8 @@ auto Afk::TerrainManager::iterate_fractal(unsigned width, unsigned height, float
 
 auto Afk::TerrainManager::get_random_coord(unsigned width, unsigned height) -> Afk::Point {
     return Afk::Point{
-        static_cast<unsigned>(rand() % static_cast<int>(width)),
-        static_cast<unsigned>(rand() % static_cast<int>(height))
+        static_cast<unsigned>(rand() % static_cast<int>(width-1)),
+        static_cast<unsigned>(rand() % static_cast<int>(height-1))
     };
 }
 
@@ -218,4 +220,10 @@ auto Afk::TerrainManager::normalise_xz_plane() -> void {
         vertex.position.x /= rangeX;
         vertex.position.z /= rangeZ;
     }
+}
+
+auto Afk::TerrainManager::assign_textures() -> void {
+  for (auto &mesh: this->model.meshes) {
+    mesh.textures.push_back(Afk::Texture("res/texture/grass.png"));
+  }
 }

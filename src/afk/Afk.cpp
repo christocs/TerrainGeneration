@@ -106,7 +106,6 @@ Engine::Engine() {
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
   const auto window_size = this->renderer.get_window_size();
-  this->renderer.get_model("res/model/basketball/basketball.fbx");
 
   this->renderer.clear_screen();
   this->ui.prepare();

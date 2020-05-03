@@ -191,8 +191,7 @@ auto Renderer::set_texture_unit(size_t unit) const -> void {
 
 auto Renderer::bind_texture(const TextureHandle &texture) const -> void {
   afk_assert_debug(texture.id > 0, "Invalid texture unit");
-  // glBindTexture(GL_TEXTURE_2D, texture.id);
-  glBindTexture(GL_TEXTURE_2D, 1);
+  glBindTexture(GL_TEXTURE_2D, texture.id);
 }
 
 auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,

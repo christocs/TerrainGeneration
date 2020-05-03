@@ -8,6 +8,8 @@ namespace Afk {
     // using point = std::vector<unsigned>[2];
     class TerrainManager {
         public:
+            TerrainManager() = default;
+
             auto generate_flat(unsigned width, unsigned height) -> void;
 
             auto generate_from_height_map(std::filesystem::path path, unsigned width, unsigned height) -> void;
@@ -17,6 +19,8 @@ namespace Afk {
             auto get_model() -> Afk::Model;
         private:
             Afk::Model model;
+
+            auto assign_textures() -> void;
 
             auto iterate_fractal(unsigned width, unsigned height, float displacement) -> void;
 
