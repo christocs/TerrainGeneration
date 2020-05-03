@@ -13,7 +13,7 @@ namespace Afk {
 
     auto generate_flat(unsigned width, unsigned height) -> void;
 
-    auto generate_from_height_map(std::filesystem::path path, unsigned width,
+    auto generate_from_height_map(const std::filesystem::path& path, unsigned width,
                                   unsigned height) -> void;
 
     auto generate_fractal(unsigned width, unsigned height) -> void;
@@ -31,6 +31,6 @@ namespace Afk {
 
     auto normalise_xz_plane() -> void;
 
-    auto get_random_coord(unsigned width, unsigned height) -> Afk::Point;
+    static auto get_random_coord(unsigned width, unsigned height) -> Afk::Point;
   };
 };

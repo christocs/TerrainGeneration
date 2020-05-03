@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <random>
 
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
@@ -18,8 +19,8 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
   texCoords[2] = glm::vec2{0.5f, 1.0f};
 
   // define vertices for plane
-  const auto no_vertices = static_cast<size_t>(width * height);
-  this->model.meshes[0].vertices.resize(no_vertices);
+  const auto no_vertices = width * height;
+  this->model.meshes[0].vertices.resize(static_cast<size_t>(no_vertices));
 
   size_t vertex_index = 0;
 
@@ -83,7 +84,7 @@ auto Afk::TerrainManager::get_model() -> Afk::Model {
   return this->model;
 }
 
-auto Afk::TerrainManager::generate_from_height_map(std::filesystem::path path, unsigned width,
+auto Afk::TerrainManager::generate_from_height_map(const std::filesystem::path& path, unsigned width,
                                                    unsigned height) -> void {
   afk_assert(width > 0, "Width cannot be 0");
   afk_assert(height > 0, "Height cannot be 0");
@@ -96,12 +97,12 @@ auto Afk::TerrainManager::generate_from_height_map(std::filesystem::path path, u
 
   afk_assert(!!file, "Failed to open filestream");
 
-  file.seekg(0, file.end);
+  file.seekg(0, std::ifstream::end);
   auto length = static_cast<unsigned>(file.tellg());
 
   afk_assert(length == width * height, "Invalid file size");
 
-  file.seekg(0, file.beg);
+  file.seekg(0, std::ifstream::beg);
 
   char *buffer = new char[width];
 
@@ -137,10 +138,10 @@ auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned height) -> v
 auto Afk::TerrainManager::iterate_fractal(unsigned width, unsigned height,
                                           float displacement) -> void {
   // get two random points which are not the same
-  auto point1 = this->get_random_coord(width, height);
-  auto point2 = this->get_random_coord(width, height);
+  auto point1 = Afk::TerrainManager::get_random_coord(width, height);
+  auto point2 = Afk::TerrainManager::get_random_coord(width, height);
   while (point1.x == point2.x && point1.y == point2.y) {
-    point2 = this->get_random_coord(width, height);
+    point2 = Afk::TerrainManager::get_random_coord(width, height);
   }
 
   for (unsigned x = 0; x < width; x++) {
@@ -151,16 +152,14 @@ auto Afk::TerrainManager::iterate_fractal(unsigned width, unsigned height,
       const auto i = stride + z;
       if (pointSide > 0) {
         this->model.meshes[0].vertices[i].position.y += static_cast<float>(displacement);
-      } else if (pointSide < 0) {
-        this->model.meshes[0].vertices[i].position.y -= static_cast<float>(displacement);
       }
     }
   }
 }
 
 auto Afk::TerrainManager::get_random_coord(unsigned width, unsigned height) -> Afk::Point {
-  return Afk::Point{static_cast<unsigned>(rand() % static_cast<int>(width - 1)),
-                    static_cast<unsigned>(rand() % static_cast<int>(height - 1))};
+  return Afk::Point{static_cast<unsigned>(random() % static_cast<int>(width - 1)),
+                    static_cast<unsigned>(random() % static_cast<int>(height - 1))};
 }
 
 auto Afk::TerrainManager::normalise_height() -> void {
