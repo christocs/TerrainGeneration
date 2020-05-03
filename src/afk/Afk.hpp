@@ -2,11 +2,11 @@
 
 #include <glm/glm.hpp>
 
+#include "afk/component/TerrainManager.hpp"
 #include "afk/event/EventManager.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 #include "afk/ui/Ui.hpp"
-#include "afk/component/TerrainManager.hpp"
 
 namespace Afk {
   class Engine {

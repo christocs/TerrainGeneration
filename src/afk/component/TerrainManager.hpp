@@ -1,33 +1,36 @@
 #pragma once
 
-#include "afk/renderer/Model.hpp"
 #include <filesystem>
+
 #include "afk/physics/Point.hpp"
+#include "afk/renderer/Model.hpp"
 
 namespace Afk {
-    // using point = std::vector<unsigned>[2];
-    class TerrainManager {
-        public:
-            TerrainManager() = default;
+  // using point = std::vector<unsigned>[2];
+  class TerrainManager {
+  public:
+    TerrainManager() = default;
 
-            auto generate_flat(unsigned width, unsigned height) -> void;
+    auto generate_flat(unsigned width, unsigned height) -> void;
 
-            auto generate_from_height_map(std::filesystem::path path, unsigned width, unsigned height) -> void;
+    auto generate_from_height_map(std::filesystem::path path, unsigned width,
+                                  unsigned height) -> void;
 
-            auto generate_fractal(unsigned width, unsigned height) -> void;
+    auto generate_fractal(unsigned width, unsigned height) -> void;
 
-            auto get_model() -> Afk::Model;
-        private:
-            Afk::Model model;
+    auto get_model() -> Afk::Model;
 
-            auto assign_textures() -> void;
+  private:
+    Afk::Model model;
 
-            auto iterate_fractal(unsigned width, unsigned height, float displacement) -> void;
+    auto assign_textures() -> void;
 
-            auto normalise_height() -> void;
+    auto iterate_fractal(unsigned width, unsigned height, float displacement) -> void;
 
-            auto normalise_xz_plane() -> void;
+    auto normalise_height() -> void;
 
-            auto get_random_coord(unsigned width, unsigned height) -> Afk::Point;
-    };
+    auto normalise_xz_plane() -> void;
+
+    auto get_random_coord(unsigned width, unsigned height) -> Afk::Point;
+  };
 };

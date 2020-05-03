@@ -96,11 +96,14 @@ Engine::Engine() {
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
 
-  this->heightmap_terrain_manager.generate_from_height_map("res/heightmap/height128.raw", 128, 128);
-  this->heightmap_terrain_model_handle = this->renderer.load_model(this->heightmap_terrain_manager.get_model());
+  this->heightmap_terrain_manager.generate_from_height_map(
+      "res/heightmap/height128.raw", 128, 128);
+  this->heightmap_terrain_model_handle =
+      this->renderer.load_model(this->heightmap_terrain_manager.get_model());
 
   this->fractal_terrain_manager.generate_fractal(32, 32);
-  this->fractal_terrain_model_handle = this->renderer.load_model(this->fractal_terrain_manager.get_model());
+  this->fractal_terrain_model_handle =
+      this->renderer.load_model(this->fractal_terrain_manager.get_model());
 }
 
 auto Engine::render() -> void {
@@ -118,12 +121,12 @@ auto Engine::render() -> void {
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   Transform h_transform;
-  h_transform.scale = vec3{5.0f, 1.0f, 5.0f};
+  h_transform.scale       = vec3{5.0f, 1.0f, 5.0f};
   h_transform.translation = vec3{-5.0f, 0.0f, 0.0f};
   this->renderer.draw_model(this->heightmap_terrain_model_handle, shader, h_transform);
 
   Transform f_transform;
-  f_transform.scale = vec3{5.0f, 20.0f, 5.0f};
+  f_transform.scale       = vec3{5.0f, 20.0f, 5.0f};
   f_transform.translation = vec3{5.0f, 0.0f, 0.0f};
   this->renderer.draw_model(this->fractal_terrain_model_handle, shader, f_transform);
 
