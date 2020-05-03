@@ -2,8 +2,8 @@
 
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <random>
+#include <string>
 
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
@@ -80,12 +80,12 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
 }
 
 auto Afk::TerrainManager::get_model() -> Afk::Model {
-  this->assign_textures();
+  this->assign_textures("res/texture/grass.png");
   return this->model;
 }
 
-auto Afk::TerrainManager::generate_from_height_map(const std::filesystem::path& path, unsigned width,
-                                                   unsigned height) -> void {
+auto Afk::TerrainManager::generate_from_height_map(const std::filesystem::path &path,
+                                                   unsigned width, unsigned height) -> void {
   afk_assert(width > 0, "Width cannot be 0");
   afk_assert(height > 0, "Height cannot be 0");
 
@@ -124,37 +124,100 @@ auto Afk::TerrainManager::generate_from_height_map(const std::filesystem::path& 
   this->normalise_height();
 }
 
+// diamond square algorithm
+// @see https://medium.com/@nickobrien/diamond-square-algorithm-explanation-and-c-implementation-5efa891e486f
+// TODO: support rectangular height maps
 auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned height) -> void {
+  afk_assert(width == height, "fractal height maps must be square");
   this->generate_flat(width, height);
-  // const auto noIterations = width * height;
-  const auto noIterations = 1;
-  for (int i = 0; i < noIterations; i++) {
-    this->iterate_fractal(width, height,
-                          noIterations - (static_cast<float>(i) / noIterations));
+
+  unsigned int size = height;
+  unsigned int half = size / 2;
+  while (half > 0) {
+    // square steps
+    for (auto z = half; z < height; z += size) {
+      for (auto x = half; x < height; x += size) {
+        this->fractal_square_step(height, width, x % width, z % width, half);
+      }
+    }
+
+    // diamond steps
+    unsigned int col = 0;
+    for (unsigned int x = 0; x < width; x += half) {
+      col++;
+      if (col % 2 == 1) {
+        for (unsigned int z = half; z < height; z += size) {
+          this->fractal_diamond_step(height, width, x % width, z % height, half);
+        }
+      } else {
+        for (unsigned int z = 0; z < height; z += size) {
+          this->fractal_diamond_step(height, width, x % width, z % height, half);
+        }
+      }
+    }
+
+    size = half;
+    half = size / 2;
   }
+
   this->normalise_height();
 }
 
-auto Afk::TerrainManager::iterate_fractal(unsigned width, unsigned height,
-                                          float displacement) -> void {
-  // get two random points which are not the same
-  auto point1 = Afk::TerrainManager::get_random_coord(width, height);
-  auto point2 = Afk::TerrainManager::get_random_coord(width, height);
-  while (point1.x == point2.x && point1.y == point2.y) {
-    point2 = Afk::TerrainManager::get_random_coord(width, height);
+auto Afk::TerrainManager::fractal_square_step(unsigned height, unsigned width, unsigned x,
+                                              unsigned z, unsigned reach) -> void {
+  unsigned int count = 0;
+  float avg          = 0.0f;
+  if (((static_cast<int>(x) - static_cast<int>(reach)) >= 0) && ((static_cast<int>(z) - static_cast<int>(reach)) >= 0)) {
+    avg += this->get_height_at(height, x, z);
+    count++;
+  }
+  if (((static_cast<int>(x) - static_cast<int>(reach)) >= 0) && ((z + reach) >= height)) {
+    avg += this->get_height_at(height, x, z);
+    count++;
+  }
+  if (((x + reach) < height) && ((static_cast<int>(z) - static_cast<int>(reach)) >= 0)) {
+    avg += this->get_height_at(height, x, z);
+    count++;
+  }
+  if (((x + reach) < height) && ((z + reach) < height)) {
+    avg += this->get_height_at(height, x, z);
+    count++;
   }
 
-  for (unsigned x = 0; x < width; x++) {
-    const auto stride = x * height;
-    for (unsigned z = 0; z < height; z++) {
-      auto pointSide = ((x - point1.x) * (point2.y - point1.y)) -
-                       ((z - point1.y) * (point2.x - point1.x));
-      const auto i = stride + z;
-      if (pointSide > 0) {
-        this->model.meshes[0].vertices[i].position.y += static_cast<float>(displacement);
-      }
-    }
+  avg += static_cast<float>(Afk::TerrainManager::range_random(static_cast<int>(reach)));
+  avg /= static_cast<float>(count);
+  this->model.meshes[0]
+      .vertices[Afk::TerrainManager::get_index(height, x, z)]
+      .position.y = avg;
+}
+
+auto Afk::TerrainManager::fractal_diamond_step(unsigned height, unsigned width, unsigned x,
+                                              unsigned z, unsigned reach) -> void {
+  unsigned int count = 0;
+  float avg          = 0.0f;
+
+  if ((static_cast<int>(x) - static_cast<int>(reach)) >= 0) {
+    avg += this->get_height_at(height, x - reach, z);
+    count++;
   }
+  if ((x + reach) < height) {
+    avg += this->get_height_at(height, x + reach, z);
+    count++;
+  }
+  if ((static_cast<int>(z) - static_cast<int>(reach)) >= 0) {
+    avg += this->get_height_at(height, x, z - reach);
+    count++;
+  }
+  if ((z + reach) < height) {
+    avg += this->get_height_at(height, x, z + reach);
+    count++;
+  }
+
+  avg += static_cast<float>(Afk::TerrainManager::range_random(static_cast<int>(reach)));
+  avg /= static_cast<float>(count);
+  this->model.meshes[0]
+      .vertices[Afk::TerrainManager::get_index(height, x, z)]
+      .position.y = avg;
 }
 
 auto Afk::TerrainManager::get_random_coord(unsigned width, unsigned height) -> Afk::Point {
@@ -233,8 +296,22 @@ auto Afk::TerrainManager::normalise_xz_plane() -> void {
   }
 }
 
-auto Afk::TerrainManager::assign_textures() -> void {
+auto Afk::TerrainManager::assign_textures(const std::filesystem::path &texture_path) -> void {
   for (auto &mesh : this->model.meshes) {
-    mesh.textures.push_back(Afk::Texture("res/texture/grass.png"));
+    mesh.textures.push_back(Afk::Texture(texture_path));
   }
+}
+
+auto Afk::TerrainManager::get_index(unsigned map_height, unsigned x, unsigned y) -> unsigned {
+  return map_height * y + x;
+}
+
+auto Afk::TerrainManager::get_height_at(unsigned map_height, unsigned x, unsigned y) -> float {
+  return this->model.meshes[0]
+      .vertices[this->get_index(map_height, x, y)]
+      .position.y;
+}
+
+auto Afk::TerrainManager::range_random(int range) -> int {
+  return static_cast<int>((random() % (range * 2)) - range) * 5;
 }

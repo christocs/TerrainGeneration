@@ -126,7 +126,7 @@ auto Engine::render() -> void {
   this->renderer.draw_model(this->heightmap_terrain_model_handle, shader, h_transform);
 
   Transform f_transform;
-  f_transform.scale       = vec3{5.0f, 20.0f, 5.0f};
+  f_transform.scale       = vec3{5.0f, 1.0f, 5.0f};
   f_transform.translation = vec3{5.0f, 0.0f, 0.0f};
   this->renderer.draw_model(this->fractal_terrain_model_handle, shader, f_transform);
 
