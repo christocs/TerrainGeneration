@@ -138,7 +138,7 @@ auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned length) -> v
     // square steps
     for (auto z = half; z < length; z += size) {
       for (auto x = half; x < length; x += size) {
-        this->fractal_square_step(length, width, x % width, z % width, half);
+        this->fractal_square_step(length, x % width, z % width, half);
       }
     }
 
@@ -148,11 +148,11 @@ auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned length) -> v
       col++;
       if (col % 2 == 1) {
         for (unsigned int z = half; z < length; z += size) {
-          this->fractal_diamond_step(length, width, x % width, z % length, half);
+          this->fractal_diamond_step(length, x % width, z % length, half);
         }
       } else {
         for (unsigned int z = 0; z < length; z += size) {
-          this->fractal_diamond_step(length, width, x % width, z % length, half);
+          this->fractal_diamond_step(length, x % width, z % length, half);
         }
       }
     }
