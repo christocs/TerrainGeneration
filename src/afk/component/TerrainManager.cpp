@@ -8,7 +8,7 @@
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
 
-auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void {
+auto Afk::TerrainManager::generate_flat(unsigned width, unsigned length) -> void {
   this->model.meshes.clear();
   this->model.meshes.resize(1);
 
@@ -19,18 +19,20 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
   texCoords[2] = glm::vec2{0.5f, 1.0f};
 
   // define vertices for plane
-  const auto no_vertices = width * height;
+  const auto no_vertices = width * length;
   this->model.meshes[0].vertices.resize(static_cast<size_t>(no_vertices));
 
   size_t vertex_index = 0;
 
   unsigned texCoordsIndex = 0;
+  // determines if the indexes of UVs to use are ascending or descending
   bool ascending          = true;
 
   for (unsigned x = 0; x < width; x++) {
-    for (unsigned z = 0; z < height; z++) {
+    for (unsigned z = 0; z < length; z++) {
       this->model.meshes[0].vertices[vertex_index].uvs = texCoords[texCoordsIndex];
 
+      // increments or decrements the index of the height map
       if (ascending) {
         texCoordsIndex++;
         if (texCoordsIndex == (texCoords.size() - 1)) {
@@ -52,24 +54,24 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
 
   // link vertices together
   size_t index_index = 0;
-  this->model.meshes[0].indices.resize((width - 1) * (height - 1) * 6);
+  this->model.meshes[0].indices.resize((width - 1) * (length - 1) * 6);
 
   for (unsigned x = 0; x < (width - 1); x++) {
-    for (unsigned z = 0; z < (height - 1); z++) {
+    for (unsigned z = 0; z < (length - 1); z++) {
       // vertex index = (z * width) + x
-      auto base_index = static_cast<Mesh::Index>(x * height + z);
+      auto base_index = static_cast<Mesh::Index>(x * length + z);
 
       this->model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index);
       this->model.meshes[0].indices[index_index++] =
-          static_cast<Mesh::Index>(base_index + height);
+          static_cast<Mesh::Index>(base_index + length);
       this->model.meshes[0].indices[index_index++] =
-          static_cast<Mesh::Index>(base_index + height + 1);
+          static_cast<Mesh::Index>(base_index + length + 1);
 
       this->model.meshes[0].indices[index_index++] = static_cast<Mesh::Index>(base_index);
       this->model.meshes[0].indices[index_index++] =
           static_cast<Mesh::Index>(base_index + 1);
       this->model.meshes[0].indices[index_index++] =
-          static_cast<Mesh::Index>(base_index + height + 1);
+          static_cast<Mesh::Index>(base_index + length + 1);
     }
   }
 
@@ -78,16 +80,17 @@ auto Afk::TerrainManager::generate_flat(unsigned width, unsigned height) -> void
 
 auto Afk::TerrainManager::get_model(const std::filesystem::path &virtual_file_path) -> Afk::Model {
   this->model.file_path = virtual_file_path;
+  this->model.file_dir = virtual_file_path.parent_path();
   this->assign_textures("res/texture/grass.png");
   return this->model;
 }
 
 auto Afk::TerrainManager::generate_from_height_map(const std::filesystem::path &path,
-                                                   unsigned width, unsigned height) -> void {
+                                                   unsigned width, unsigned length) -> void {
   afk_assert(width > 0, "Width cannot be 0");
-  afk_assert(height > 0, "Height cannot be 0");
+  afk_assert(length > 0, "length cannot be 0");
 
-  this->generate_flat(width, height);
+  this->generate_flat(width, length);
 
   auto abs = Afk::get_absolute_path(path);
 
@@ -96,9 +99,9 @@ auto Afk::TerrainManager::generate_from_height_map(const std::filesystem::path &
   afk_assert(!!file, "Failed to open filestream");
 
   file.seekg(0, std::ifstream::end);
-  auto length = static_cast<unsigned>(file.tellg());
+  auto file_length = static_cast<unsigned>(file.tellg());
 
-  afk_assert(length == width * height, "Invalid file size");
+  afk_assert(file_length == width * length, "Invalid file size");
 
   file.seekg(0, std::ifstream::beg);
 
@@ -125,17 +128,17 @@ auto Afk::TerrainManager::generate_from_height_map(const std::filesystem::path &
 // diamond square algorithm
 // @see https://medium.com/@nickobrien/diamond-square-algorithm-explanation-and-c-implementation-5efa891e486f
 // TODO: support rectangular height maps
-auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned height) -> void {
-  afk_assert(width == height, "fractal height maps must be square");
-  this->generate_flat(width, height);
+auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned length) -> void {
+  afk_assert(width == length, "fractal height maps must be square");
+  this->generate_flat(width, length);
 
-  unsigned int size = height;
+  unsigned int size = length;
   unsigned int half = size / 2;
   while (half > 0) {
     // square steps
-    for (auto z = half; z < height; z += size) {
-      for (auto x = half; x < height; x += size) {
-        this->fractal_square_step(height, width, x % width, z % width, half);
+    for (auto z = half; z < length; z += size) {
+      for (auto x = half; x < length; x += size) {
+        this->fractal_square_step(length, width, x % width, z % width, half);
       }
     }
 
@@ -144,12 +147,12 @@ auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned height) -> v
     for (unsigned int x = 0; x < width; x += half) {
       col++;
       if (col % 2 == 1) {
-        for (unsigned int z = half; z < height; z += size) {
-          this->fractal_diamond_step(height, width, x % width, z % height, half);
+        for (unsigned int z = half; z < length; z += size) {
+          this->fractal_diamond_step(length, width, x % width, z % length, half);
         }
       } else {
-        for (unsigned int z = 0; z < height; z += size) {
-          this->fractal_diamond_step(height, width, x % width, z % height, half);
+        for (unsigned int z = 0; z < length; z += size) {
+          this->fractal_diamond_step(length, width, x % width, z % length, half);
         }
       }
     }
@@ -161,7 +164,7 @@ auto Afk::TerrainManager::generate_fractal(unsigned width, unsigned height) -> v
   this->normalise_height();
 }
 
-auto Afk::TerrainManager::fractal_square_step(unsigned height, unsigned width, unsigned x,
+auto Afk::TerrainManager::fractal_square_step(unsigned height, unsigned x,
                                               unsigned z, unsigned reach) -> void {
   unsigned int count = 0;
   float avg          = 0.0f;
@@ -189,7 +192,7 @@ auto Afk::TerrainManager::fractal_square_step(unsigned height, unsigned width, u
       .position.y = avg;
 }
 
-auto Afk::TerrainManager::fractal_diamond_step(unsigned height, unsigned width, unsigned x,
+auto Afk::TerrainManager::fractal_diamond_step(unsigned height, unsigned x,
                                               unsigned z, unsigned reach) -> void {
   unsigned int count = 0;
   float avg          = 0.0f;
@@ -218,9 +221,9 @@ auto Afk::TerrainManager::fractal_diamond_step(unsigned height, unsigned width, 
       .position.y = avg;
 }
 
-auto Afk::TerrainManager::get_random_coord(unsigned width, unsigned height) -> Afk::Point {
+auto Afk::TerrainManager::get_random_coord(unsigned width, unsigned length) -> Afk::Point {
   return Afk::Point{static_cast<unsigned>(random() % static_cast<int>(width - 1)),
-                    static_cast<unsigned>(random() % static_cast<int>(height - 1))};
+                    static_cast<unsigned>(random() % static_cast<int>(length - 1))};
 }
 
 auto Afk::TerrainManager::normalise_height() -> void {

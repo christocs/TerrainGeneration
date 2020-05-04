@@ -6,17 +6,31 @@
 #include "afk/renderer/Model.hpp"
 
 namespace Afk {
-  // using point = std::vector<unsigned>[2];
+
   class TerrainManager {
   public:
+    /**
+     * Default constructor
+     */
     TerrainManager() = default;
 
-    auto generate_flat(unsigned width, unsigned height) -> void;
+    /**
+     * Generate flat terrain
+     * @param width - width of terrain in the x direction
+     * @param length - length of the terrain in the z direction
+     */
+    auto generate_flat(unsigned width, unsigned length) -> void;
 
+    /**
+     * Generate a terrain from height map
+     * @param path - path of where to find the height map
+     * @param width - width of the height map in the x direction
+     * @param length - length of the height map in the z direction
+     */
     auto generate_from_height_map(const std::filesystem::path &path,
-                                  unsigned width, unsigned height) -> void;
+                                  unsigned width, unsigned length) -> void;
 
-    auto generate_fractal(unsigned width, unsigned height) -> void;
+    auto generate_fractal(unsigned width, unsigned length) -> void;
 
     auto get_model(const std::filesystem::path &virtual_file_path) -> Afk::Model;
 
@@ -29,16 +43,16 @@ namespace Afk {
 
     auto normalise_xz_plane() -> void;
 
-    static auto get_random_coord(unsigned width, unsigned height) -> Afk::Point;
+    static auto get_random_coord(unsigned width, unsigned length) -> Afk::Point;
 
     static auto get_index(unsigned map_height, unsigned x, unsigned y) -> unsigned;
 
     auto get_height_at(unsigned map_height, unsigned x, unsigned y) -> float;
 
-    auto fractal_square_step(unsigned height, unsigned width, unsigned x,
+    auto fractal_square_step(unsigned height, unsigned x,
                              unsigned z, unsigned reach) -> void;
 
-    auto fractal_diamond_step(unsigned height, unsigned width, unsigned x,
+    auto fractal_diamond_step(unsigned height, unsigned x,
                              unsigned z, unsigned reach) -> void;
 
     static auto range_random(int range) -> int;
